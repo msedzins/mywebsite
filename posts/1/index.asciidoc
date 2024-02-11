@@ -1,0 +1,58 @@
+= Managing Secrets in OCI Vault service
+:stylesheet: plain.css
+:toc: auto
+:toc-title: Table of content
+
+== Intro
+
+Secrets represent credentials such as passwords, certificates and any other confidential information. OCI Vault service provides efficient mechanism to manage them efficiently in Oracle Cloud Infrastructure.
+
+For the detailed description of the service please refer to an official link:https://docs.oracle.com/en-us/iaas/Content/KeyManagement/home.htm[documentation]. This article is intended to present some selected patterns of usage with the focus on secrets management.
+
+== Prerequisites
+
+To work with secrets we need to have a Vault and Master Encryption Key (which is used to encrypt secrets).
+
+Then we can create our secret (for example password to a datbase or API key):
+image:secret.png[Secret]
+
+Each secret is automatically assigned a secret version. We control lifecycle of the secret by creating and managing its versions.
+
+In the screenshot below we can see the list of versions for a given secret. Version number 4 is the current version, which contains the actual value.
+
+image::versions.png[Versions]
+
+== Advantages
+
+There are some obvious advantages of using OCI Vault:
+
+. Centralized management of secrets and their lifecyles (rotation) - instead of keeping them scattered across different services and environments, we can store them in one place.
+. Secure storage of secrets - secrets are stored in a secure manner, encrypted with a Master Encryption Key.
+. Compliance with security standards. This includes the concept of compliance inheritance where a provider may have parts of their service certified as compliant which removes this from the audit scope of the customer, but the customer is still responsible for the compliance of everything they build on top of the provider.
+    .. *Note:* Although Vault uses HSMs that meet Federal Information Processing Standards (FIPS) 140-2 Security Level 3 security certification to protect the keys, the secrets are **stored on the server**.
+. Access control - we can define who can access the secrets and what they can do with them.
+. Audit trail - we can track who accessed the secrets and when.
+. Set of SDKs and APIs - we can use them to automate the management of secrets.
+
+Last but not least, there is one more powerful capability of OCI Vault - integration with other OCI services. I will cover this in the next section.
+
+== How to use it
+
+how not to sue it(replace password with another password)
+Dynamic groups, anything else????
+compliance (but secrets are stored on server)
+centralized management of secrets
+
+== Conclusion
+
+This is the conclusion section of your blog post.
+
+https://docs.oracle.com/en-us/iaas/Content/Identity/dynamicgroups/Writing_Matching_Rules_to_Define_Dynamic_Groups.htm#Writing
+
+https://www.thatfinnishguy.blog/2019/04/01/oracle-cloud-infrastructure-and-dynamic-groups-what-are-they/
+
+https://medium.com/devops-and-sre-learning/authorize-instances-principal-to-call-services-in-oracle-cloud-infrastructure-d1c62b8afef8
+https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm
+https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+
+https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/vault-secret-credentials-oci.html
