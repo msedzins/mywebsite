@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>My Professional Blog</title>
     <style>
@@ -9,61 +10,68 @@
             padding: 0;
             background-color: #f4f4f4;
         }
+
         .main {
             display: flex;
             justify-content: space-between;
         }
+
         .resume {
             width: 70%;
             height: 50vh;
             padding: 20px;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
             margin: 20px;
         }
+
         .post-list {
             width: 20%;
             margin: 20px;
         }
+
         .post-list ul {
             list-style-type: none;
             padding: 0;
         }
+
         .post-list li {
             padding: 10px;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
             margin-bottom: 10px;
         }
     </style>
 </head>
+
 <body>
-    <div style="background: linear-gradient(to right, #999, #ccc, #999); height: 100px; width: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+    <div
+        style="background: linear-gradient(to right, #999, #ccc, #999); height: 100px; width: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column;">
         <h1 style="color: white;margin-bottom: 0;">Miroslaw Sedzinski</h1>
         <h3 style="color: white;margin-top: 0;">- - - - - - - - -</h3>
     </div>
     <div class="main">
         <div class="resume">
             <h1>Intro</h1>
-            <p>Hello! On this site I would like to share all the different topics that i've been interested on or working on.</p>
-            <p>With this site I want to create something that:
-                <ul>
-                    <li>will be a go-to place for all my past and future materials</li>
-                    <li>will follow KISS principle (keep it super simple :))</li>
-                    <li>will be controlled by me (through git repo)</li>
-                    <li>will fit my needs (which are quite simple)</li>
-                </ul>
+            <p>Hello!</p>
+            <p>A few words about me. I have more than 15 years of experience in IT Consulting. I've been working with
+                various technologies and platforms.
+                I'm passionate about cloud computing, automation, and security.</p>
+            <p>You can visit my <b>linkedin/github/dev.to</b> profiles for more details.</p>
+            <p>On this site I would like to share all the different topics that i've been interested on or working on.
             </p>
-            <p><b>Warning: Site is still in experimental mode.</b></p>
+            <p>The content is generated with asciidoc and hosted on GithubPages. I love the simplicity behind that.
+            </p>
+            <p><b>Warning:</b> Site is still in experimental mode. It will evolve in future for sure.</p>
         </div>
         <div class="post-list">
-            <h2 class="year">► 2022</h2>
+            <h2 class="year">v 2022</h2>
             <ul id="posts-2022">
                 <li><a href="posts/1/index.html">Managing Secrets in OCI Vault service</a></li>
                 <!--<li><a href="#post2">Post Title 2</a></li>-->
-            </ul>           
+            </ul>
             <!-- 
                 <h2 class="year">> 2021</h2>
                 <ul id="posts-2021">
@@ -72,20 +80,21 @@
                 </ul>
             -->
         </div>
-        
+
     </div>
     <footer style="text-align: center; padding: 20px; background-color: #ddd;">
         <p style="margin-bottom: 0;">© 2022 All rights reserved. </p>
-        <a href="https://www.linkedin.com/in/miroslaw-sedzinski-3077043/">Linkedin.com</a>
-    </footer>    
+        <a href="https://www.linkedin.com/in/miroslaw-sedzinski-3077043/">Linkedin.com profile</a>
+    </footer>
     <script>
-        document.querySelectorAll('.year').forEach(function(year) {
-            year.addEventListener('click', function() {
+        document.querySelectorAll('.year').forEach(function (year) {
+            year.addEventListener('click', function () {
                 var posts = document.getElementById('posts-' + this.textContent.trim().substring(2));
                 posts.style.display = posts.style.display === 'none' ? 'block' : 'none';
-                this.textContent = posts.style.display === 'none' ? '▼ ' + this.textContent.trim().substring(2) : '► ' + this.textContent.trim().substring(2);
+                this.textContent = posts.style.display === 'none' ? '> ' + this.textContent.trim().substring(2) : 'v ' + this.textContent.trim().substring(2);
             });
         });
     </script>
 </body>
+
 </html>
