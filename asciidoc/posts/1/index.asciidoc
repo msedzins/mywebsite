@@ -5,20 +5,20 @@
 
 == Intro
 
-Secrets represent credentials such as passwords, certificates and any other confidential information. OCI Vault service provides efficient mechanism to manage them efficiently in Oracle Cloud Infrastructure.
+Secrets represent credentials such as passwords, certificates and any other confidential information. OCI Vault service provides an efficient mechanism to manage them in Oracle Cloud Infrastructure.
 
 For the detailed description of the service please refer to an official link:https://docs.oracle.com/en-us/iaas/Content/KeyManagement/home.htm[documentation]. This article is intended to present some selected patterns of usage with the focus on secrets management.
 
 == Prerequisites
 
-To work with secrets we need to have a Vault and Master Encryption Key (which is used to encrypt secrets).
+To work with secrets, we need to have a Vault and Master Encryption Key (which is used to encrypt secrets).
 
-Then we can create our secret (for example password to a datbase or API key):
+Then we can create our secret (for example, password to a datbase or API key):
 image:secret.png[Secret]
 
 Each secret is automatically assigned a secret version. We control lifecycle of the secret by creating and managing its versions.
 
-In the screenshot below we can see the list of versions for a given secret. Version number 4 is the current version, which contains the actual value.
+In the screenshot below, we can see the list of versions for a given secret. Version number 4 is the current version, which contains the actual value.
 
 image::versions.png[Versions]
 
@@ -30,9 +30,9 @@ There are some obvious advantages of using OCI Vault:
 . Secure storage of secrets - secrets are stored in a secure manner, encrypted with a Master Encryption Key.
 . Compliance with security standards. This includes the concept of compliance inheritance where a provider may have parts of their service certified as compliant which removes this from the audit scope of the customer, but the customer is still responsible for the compliance of everything they build on top of the provider.
     .. *Note:* Although Vault uses HSMs that meet Federal Information Processing Standards (FIPS) 140-2 Security Level 3 security certification to protect the keys, the secrets are **stored on the server**.
-. Access control - we can define who can access the secrets and what they can do with them.
+. Access control - we can define who can access the secrets and what actions can be taken.
 . Audit trail - we can track who accessed the secrets and when.
-. Set of SDKs and APIs - we can use them to automate the management of secrets.
+. Set of SDKs and APIs - we can use these to automate the management of secrets.
 
 Last but not least, there is one more powerful capability of OCI Vault - integration with other OCI services. I will cover this in the next section.
 
@@ -47,7 +47,7 @@ user=XXXX
 password=XXX
 ```
 
-This approach is of course security anti-pattern and should be avoided at any cost. Let's see how we can improve it by using Vault. 
+This approach is of course security anti-pattern and should be avoided whenever possible. Let's see how we can improve it by using Vault. 
 
 Once we switch to Vault, we can retrieve the secret from the Vault and then use it in our code. It means that, in our example, we don't store password in configuration file any more. However, we need to somehow authenticate to the Vault to retrieve the secret. And we end up with something like this in our configuration file:
 
@@ -60,11 +60,11 @@ key_file=~/.oci/oci_api_key.pem
 
 Note:: Format depends on the SDK we use (above example comes from OCI CLI) but the information we need to provide is always the same.
 
-This is a step forward but still not perfect. We need to store the key file on the server and we need to manage it. We also need to manage the user and its permissions.
+This is a step forward but still not perfect. We need to store user id and the key file (oci_api_key.pem) locally on the server and we need to manage it. Please note, that the key file is a sensitive information. It is used to authenticate to the Vault and it should be protected in the same way as the secret itself. We have kind of a chicken and egg problem here: we protect a secret (password) by another secret (key file).
 
 Can we do any better? Yes, we can!
 
-=== New approach
+=== Refined approach
 
 Let's use OCI Vault to store the secret and then use a conecept known as OCI Dynamic Groups to manage access to the secret.
 
@@ -98,21 +98,23 @@ Allow dynamic-group DynamicGroupName to read secret-bundles in compartment Compa
 
 Now, we can use the OCI SDK to retrieve the secret from the Vault. We don't need to store any credentials in our code or configuration file. We don't need to manage any keys or users. 
 
-We can use the instance principal to authenticate to the Vault. The instance principal is a concept that allows an instance to authenticate to other OCI services without the need to store any credentials on the instance.
+We can use the instance principal to authenticate to the Vault. link:https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm[The instance principal] is a concept that allows an instance to authenticate to other OCI services without the need to store any credentials on the instance.
 
 To use it, first we need to SSH to the instance that belongs to our Dynamic Group and then:
 
-1. For OCI we use "instance_principal" as the authentication method, for example: ``oci os ns get --auth instance_principal``
+1. For OCI CLI we use "instance_principal" as the authentication method, for example: ``oci os ns get --auth instance_principal``
 2. For Python SDK we use "oci.auth.signers.InstancePrincipalsSecurityTokenSigner" as the signer. Example link:https://github.com/oracle/oci-python-sdk/blob/master/examples/instance_principals_examples.py[here].
 3. For other SDKs we use the equivalent method.
 
 *In other words: we don't need to store any credentials on the instance. We don't need to manage any keys or users. Everything is handled out of the box, transparently.*
 
+Note:: What we need to keep in mind is that access based on instance principal is instance wide. It means that if we have multiple applications running on the same instance, they all share the same instance principal. The same in case of anyone who ssh into the machine. It might be a security concern in some cases.
+
 === Supported resource types
 
-Based on my knowlege the following resource types are supported:
+The following resource types are supported:
 
-. Compute instances 
+. Compute instances (covered above)
 . Autonomous Databases link:https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/vault-secret-credentials-oci.html[link]
 . Functions link:https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm[link]
 
@@ -124,13 +126,11 @@ It significantly simplifies the management of access to secrets and improves sec
  
 OCI Vault is a service that brings number of benefits on its own. However, when combining with Dynamic Groups and instance principal concept it becomes even more powerful. It allows us to  manage access to secrets in a very secure and efficient manner. 
 
+== Some useful links
 
-https://docs.oracle.com/en-us/iaas/Content/Identity/dynamicgroups/Writing_Matching_Rules_to_Define_Dynamic_Groups.htm#Writing
-
-https://www.thatfinnishguy.blog/2019/04/01/oracle-cloud-infrastructure-and-dynamic-groups-what-are-they/
-
-https://medium.com/devops-and-sre-learning/authorize-instances-principal-to-call-services-in-oracle-cloud-infrastructure-d1c62b8afef8
-https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm
-https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
-
-https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/vault-secret-credentials-oci.html
+. https://docs.oracle.com/en-us/iaas/Content/Identity/dynamicgroups/Writing_Matching_Rules_to_Define_Dynamic_Groups.htm#Writing
+. https://www.thatfinnishguy.blog/2019/04/01/oracle-cloud-infrastructure-and-dynamic-groups-what-are-they/
+. https://medium.com/devops-and-sre-learning/authorize-instances-principal-to-call-services-in-oracle-cloud-infrastructure-d1c62b8afef8
+. https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm
+. https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+. https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/vault-secret-credentials-oci.html
