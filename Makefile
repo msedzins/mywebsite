@@ -6,9 +6,9 @@ deploy: ${posts}
 
 asciidoc/posts/%/index.html: asciidoc/posts/%/index.asciidoc
 	asciidoctor $? -o $@
-	cp $@ $(subst asciidoc,site,$(@))
+	cp $@ $(subst asciidoc,docs,$(@))
 	$(eval css := $(subst index.html,plain.css,$(@)))
-	cp $(css) $(subst asciidoc,site,$(css))
+	cp $(css) $(subst asciidoc,docs,$(css))
 	rm $@
 
 
