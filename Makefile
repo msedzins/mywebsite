@@ -5,6 +5,7 @@ deploy: build
 	git push
 
 build: ${posts}
+	asciidoctor asciidoc/index.asciidoc -o docs/index.html
 
 asciidoc/posts/%/index.html: asciidoc/posts/%/index.asciidoc
 	asciidoctor $? -o $@
