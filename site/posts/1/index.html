@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.20">
+<title>Managing Secrets in OCI Vault service</title>
+<style>
+/* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
+
+@import url(//fonts.googleapis.com/css?family=Noto+Sans);
+@import url(https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css); /* Default asciidoc style framework - important */
+
+/* CUSTOMISATIONS */
+/* Change the values in root for quick customisation. If you want even more fine grain... venture further. */
+:root{
+--maincolor:#FFFFFF;
+--primarycolor:#000000;
+--secondarycolor:#AAAAAA;
+--tertiarycolor:#CCCCCC;
+--sidebarbackground:#CACACA;
+--linkcolor:#0D47A1;
+--linkcoloralternate:#B71C1C;
+--white:#FFFFFF;
+--black:#000000;
+}
+
+/* Text styles */
+
+body{font-family: "Noto Sans",sans-serif;background-color: var(--maincolor);color:var(--black);}
+
+h1{color:var(--primarycolor) !important;font-family:"Noto Sans",sans-serif;}
+h2,h3,h4,h5,h6{color:var(--secondarycolor) !important;font-family:"Noto Sans",sans-serif;}
+.title{color:var(--black) !important;font-family:"Noto Sans",sans-serif;font-style: normal; font-weight: normal;}
+a{text-decoration: none;}
+p{font-family: "Noto Sans",sans-serif ! important}
+#toc.toc2 a:link{color:var(--linkcolor);}
+blockquote{color:var(--secondarycolor) !important}
+.quoteblock{color:var(--black)}
+.quoteblock blockquote:before{color:var(--black)}
+code{color:var(--white);background-color: var(--secondarycolor) !important}
+mark{background-color: var(--tertiarycolor)} /* Text highlighting color */
+
+/* Table styles */
+th{background-color: var(--maincolor);color:var(--black) !important;}
+td{background-color: var(--maincolor);color: var(--black) !important}
+
+
+#toc.toc2{background-color:var(--sidebarbackground);}
+/*#toctitle{color:var(--white);}*/
+#toctitle{color:var(--black);}
+
+/* Responsiveness fixes */
+video {
+  max-width: 100%;
+}
+
+@media all and (max-width: 600px) {
+table {
+  width: 55vw!important;
+  font-size: 3vw;
+}
+
+</style>
+</head>
+<body class="article">
+<div id="header">
+<h1>Managing Secrets in OCI Vault service</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of content</div>
+<ul class="sectlevel1">
+<li><a href="#_intro">Intro</a></li>
+<li><a href="#_prerequisites">Prerequisites</a></li>
+<li><a href="#_advantages">Advantages</a></li>
+<li><a href="#_integration_with_other_oci_services">Integration with other OCI services</a>
+<ul class="sectlevel2">
+<li><a href="#_traditional_approach">Traditional approach</a></li>
+<li><a href="#_new_approach">New approach</a></li>
+<li><a href="#_supported_resource_types">Supported resource types</a></li>
+</ul>
+</li>
+<li><a href="#_summary">Summary</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_intro">Intro</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Secrets represent credentials such as passwords, certificates and any other confidential information. OCI Vault service provides efficient mechanism to manage them efficiently in Oracle Cloud Infrastructure.</p>
+</div>
+<div class="paragraph">
+<p>For the detailed description of the service please refer to an official <a href="https://docs.oracle.com/en-us/iaas/Content/KeyManagement/home.htm">documentation</a>. This article is intended to present some selected patterns of usage with the focus on secrets management.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites">Prerequisites</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To work with secrets we need to have a Vault and Master Encryption Key (which is used to encrypt secrets).</p>
+</div>
+<div class="paragraph">
+<p>Then we can create our secret (for example password to a datbase or API key):
+<span class="image"><img src="secret.png" alt="Secret"></span></p>
+</div>
+<div class="paragraph">
+<p>Each secret is automatically assigned a secret version. We control lifecycle of the secret by creating and managing its versions.</p>
+</div>
+<div class="paragraph">
+<p>In the screenshot below we can see the list of versions for a given secret. Version number 4 is the current version, which contains the actual value.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="versions.png" alt="Versions">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_advantages">Advantages</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are some obvious advantages of using OCI Vault:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Centralized management of secrets and their lifecyles (rotation) - instead of keeping them scattered across different services and environments, we can store them in one place.</p>
+</li>
+<li>
+<p>Secure storage of secrets - secrets are stored in a secure manner, encrypted with a Master Encryption Key.</p>
+</li>
+<li>
+<p>Compliance with security standards. This includes the concept of compliance inheritance where a provider may have parts of their service certified as compliant which removes this from the audit scope of the customer, but the customer is still responsible for the compliance of everything they build on top of the provider.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p><strong>Note:</strong> Although Vault uses HSMs that meet Federal Information Processing Standards (FIPS) 140-2 Security Level 3 security certification to protect the keys, the secrets are <strong>stored on the server</strong>.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Access control - we can define who can access the secrets and what they can do with them.</p>
+</li>
+<li>
+<p>Audit trail - we can track who accessed the secrets and when.</p>
+</li>
+<li>
+<p>Set of SDKs and APIs - we can use them to automate the management of secrets.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Last but not least, there is one more powerful capability of OCI Vault - integration with other OCI services. I will cover this in the next section.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_integration_with_other_oci_services">Integration with other OCI services</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_traditional_approach">Traditional approach</h3>
+<div class="paragraph">
+<p>Traditionally, when we need to use a secret in our application, we store it in configuration file or environment variable and then use it in our code. It might be as simple as that:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">user=XXXX
+password=XXX</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This approach is of course security anti-pattern and should be avoided at any cost. Let&#8217;s see how we can improve it by using Vault.</p>
+</div>
+<div class="paragraph">
+<p>Once we switch to Vault, we can retrieve the secret from the Vault and then use it in our code. It means that, in our example, we don&#8217;t store password in configuration file any more. However, we need to somehow authenticate to the Vault to retrieve the secret. And we end up with something like this in our configuration file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-yaml" data-lang="yaml">[DEFAULT]
+user=ocid1.user.oc1..&lt;unique_ID&gt;
+key_file=~/.oci/oci_api_key.pem</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Note</dt>
+<dd>
+<p>Format depends on the SDK we use (above example comes from OCI CLI) but the information we need to provide is always the same.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>This is a step forward but still not perfect. We need to store the key file on the server and we need to manage it. We also need to manage the user and its permissions.</p>
+</div>
+<div class="paragraph">
+<p>Can we do any better? Yes, we can!</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_new_approach">New approach</h3>
+<div class="paragraph">
+<p>Let&#8217;s use OCI Vault to store the secret and then use a conecept known as OCI Dynamic Groups to manage access to the secret.</p>
+</div>
+<div class="sect3">
+<h4 id="_step_1_create_a_dynamic_group">Step 1: Create a dynamic group</h4>
+<div class="paragraph">
+<p>Dynamic groups are a way to define a group of instances or other resources that match certain criteria. Later, we can use them to define who can access the secret.</p>
+</div>
+<div class="paragraph">
+<p>For example, to create dynamic group that includes all instances in a given compartment, we can use the following rule:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>ALL { instance.compartment.id = '&lt;compartment_ocid&gt;' }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For detailed syntax please refer to the official documentation <a href="https://docs.oracle.com/en-us/iaas/Content/Identity/dynamicgroups/Writing_Matching_Rules_to_Define_Dynamic_Groups.htm">here</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_step_2_create_a_policy">Step 2: Create a policy</h4>
+<div class="paragraph">
+<p>After we have our dynamic group, we can create a policy that allows the dynamic group to access the secret(s).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>Allow dynamic-group DynamicGroupName to read secret-bundles in compartment CompartmentName</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or if we want to narrow it down to a specific secret:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>Allow dynamic-group DynamicGroupName to read secret-bundles in compartment CompartmentName where request.secret-name='MySecret'</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_step_3_use_the_secret_in_our_code">Step 3: Use the secret in our code</h4>
+<div class="paragraph">
+<p>Now, we can use the OCI SDK to retrieve the secret from the Vault. We don&#8217;t need to store any credentials in our code or configuration file. We don&#8217;t need to manage any keys or users.</p>
+</div>
+<div class="paragraph">
+<p>We can use the instance principal to authenticate to the Vault. The instance principal is a concept that allows an instance to authenticate to other OCI services without the need to store any credentials on the instance.</p>
+</div>
+<div class="paragraph">
+<p>To use it, first we need to SSH to the instance that belongs to our Dynamic Group and then:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>For OCI we use "instance_principal" as the authentication method, for example: <code>oci os ns get --auth instance_principal</code></p>
+</li>
+<li>
+<p>For Python SDK we use "oci.auth.signers.InstancePrincipalsSecurityTokenSigner" as the signer. Example <a href="https://github.com/oracle/oci-python-sdk/blob/master/examples/instance_principals_examples.py">here</a>.</p>
+</li>
+<li>
+<p>For other SDKs we use the equivalent method.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>In other words: we don&#8217;t need to store any credentials on the instance. We don&#8217;t need to manage any keys or users. Everything is handled out of the box, transparently.</strong></p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_supported_resource_types">Supported resource types</h3>
+<div class="paragraph">
+<p>Based on my knowlege the following resource types are supported:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Compute instances</p>
+</li>
+<li>
+<p>Autonomous Databases <a href="https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/vault-secret-credentials-oci.html">link</a></p>
+</li>
+<li>
+<p>Functions <a href="https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm">link</a></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>It means that when connect to the Vault from one of the above resources, we can use the instance principal to authenticate to the Vault. No user or key file is needed.</p>
+</div>
+<div class="paragraph">
+<p>It significantly simplifies the management of access to secrets and improves security.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary">Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OCI Vault is a service that brings number of benefits on its own. However, when combining with Dynamic Groups and instance principal concept it becomes even more powerful. It allows us to  manage access to secrets in a very secure and efficient manner.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.oracle.com/en-us/iaas/Content/Identity/dynamicgroups/Writing_Matching_Rules_to_Define_Dynamic_Groups.htm#Writing" class="bare">https://docs.oracle.com/en-us/iaas/Content/Identity/dynamicgroups/Writing_Matching_Rules_to_Define_Dynamic_Groups.htm#Writing</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://www.thatfinnishguy.blog/2019/04/01/oracle-cloud-infrastructure-and-dynamic-groups-what-are-they/" class="bare">https://www.thatfinnishguy.blog/2019/04/01/oracle-cloud-infrastructure-and-dynamic-groups-what-are-they/</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://medium.com/devops-and-sre-learning/authorize-instances-principal-to-call-services-in-oracle-cloud-infrastructure-d1c62b8afef8" class="bare">https://medium.com/devops-and-sre-learning/authorize-instances-principal-to-call-services-in-oracle-cloud-infrastructure-d1c62b8afef8</a>
+<a href="https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm" class="bare">https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm</a>
+<a href="https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm" class="bare">https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/vault-secret-credentials-oci.html" class="bare">https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/vault-secret-credentials-oci.html</a></p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2024-02-18 12:27:46 +0100
+</div>
+</div>
+</body>
+</html>

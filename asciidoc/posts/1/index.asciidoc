@@ -121,8 +121,8 @@ It means that when connect to the Vault from one of the above resources, we can 
 It significantly simplifies the management of access to secrets and improves security.
 
 == Summary
-
-OCI Vault is a service that brings number of benefits on its own. However, when combining with Dynamic Groups and instance principal concept it becomes even more powerful. It allows us to manage access to secrets in a very secure and efficient manner. 
+ 
+OCI Vault is a service that brings number of benefits on its own. However, when combining with Dynamic Groups and instance principal concept it becomes even more powerful. It allows us to  manage access to secrets in a very secure and efficient manner. 
 
 
 https://docs.oracle.com/en-us/iaas/Content/Identity/dynamicgroups/Writing_Matching_Rules_to_Define_Dynamic_Groups.htm#Writing
