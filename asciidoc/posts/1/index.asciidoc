@@ -1,5 +1,4 @@
 = Managing Secrets in OCI Vault service
-:stylesheet: plain.css
 :toc: auto
 :toc-title: Table of content
 
@@ -7,7 +6,7 @@ link:../../index.html[Back to main page]
 
 == Intro
 
-Secrets represent credentials such as passwords, certificates and any other confidential information. OCI Vault service provides an efficient mechanism to manage them in Oracle Cloud Infrastructure.
+Secrets represent credentials such as passwords, private keys and any other confidential information. OCI Vault service provides an efficient mechanism to manage them in Oracle Cloud Infrastructure.
 
 For the detailed description of the service please refer to an official link:https://docs.oracle.com/en-us/iaas/Content/KeyManagement/home.htm[documentation]. This article is intended to present some selected patterns of usage with the focus on secrets management.
 
