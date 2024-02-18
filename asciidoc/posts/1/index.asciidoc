@@ -3,6 +3,8 @@
 :toc: auto
 :toc-title: Table of content
 
+link:../../index.html[Back to main page]
+
 == Intro
 
 Secrets represent credentials such as passwords, certificates and any other confidential information. OCI Vault service provides an efficient mechanism to manage them in Oracle Cloud Infrastructure.
