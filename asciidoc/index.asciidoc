@@ -1,0 +1,33 @@
+= My Web Site
+:doctype: book
+:title-page:
+:author: Miroslaw Sedzinski
+:toc: left
+:toc-title: Table of content
+
+== Intro
+
+Hey, I'm Miroslaw,
+
+A few words about me. I have more than 15 years of experience in IT Consulting. I've been working wit various technologies and platforms. I'm passionate about cloud computing, automation, and security.
+
+You can visit my:
+
+. link:https://www.linkedin.com/in/miroslaw-sedzinski-3077043[Linkedin]
+. link:https://github.com/msedzins[Github]
+. link:https://dev.to/msedzins[Dev.to]  
+
+profiles for more details.
+
+On this site I would like to share all the different topics that i've been interested in or working on.
+
+Warning::
+Site is still in experimental mode. It will evolve in future for sure.
+
+
+== Posts
+
+=== link:posts/1/index.html[Managing Secrets in OCI Vault service (link)]
+
+
+
