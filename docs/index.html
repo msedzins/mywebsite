@@ -59,7 +59,7 @@
             <p><b>Warning: Site is still in experimental mode.</b></p>
         </div>
         <div class="post-list">
-            <h2 class="year">> 2022</h2>
+            <h2 class="year">► 2022</h2>
             <ul id="posts-2022">
                 <li><a href="posts/1/index.html">Managing Secrets in OCI Vault service</a></li>
                 <!--<li><a href="#post2">Post Title 2</a></li>-->
@@ -83,7 +83,7 @@
             year.addEventListener('click', function() {
                 var posts = document.getElementById('posts-' + this.textContent.trim().substring(2));
                 posts.style.display = posts.style.display === 'none' ? 'block' : 'none';
-                this.textContent = posts.style.display === 'none' ? 'v ' + this.textContent.trim().substring(2) : '> ' + this.textContent.trim().substring(2);
+                this.textContent = posts.style.display === 'none' ? '▼ ' + this.textContent.trim().substring(2) : '► ' + this.textContent.trim().substring(2);
             });
         });
     </script>
