@@ -1,0 +1,331 @@
+= Extending payment privacy in permissoned blockchain system (Hyperledger Fabric)
+:stem: 
+:title-page: 
+:author: Miroslaw Sedzinski
+:revnumber: 0.1
+:revdate: {docdate}
+:revremark: Draft version
+:toc: auto
+:toc-title: Table of content
+
+[%breakable]
+== Inroduction
+
+[%breakable]
+=== Motivation
+
+In permissioned blockchain, there is usually no anonymity by definition. However there is a need to hide some information from other participants. To that end, HyperLedger Fabric (which is a focus of this paper) introduced a mechanism of channels and private data collections. It works by physically partitioning the data based on what should be visible to whom. The mechanism works fine for number of use cases, however payment use case seems to be specific - on the one hand it would be good to keep all the information in one place (not partition it), on the other hand privacy is still required.
+
+To accommodate this requirement we propose to consider using zero knowledge proofs. It is a well known concept, widely used in permissionless blockchain:
+
+[quote,Wikipedia,https://en.wikipedia.org/wiki/Zero-knowledge_proof]
+In cryptography, a zero-knowledge proof or zero-knowledge protocol is a method by which one party (the prover) can prove to another party (the verifier) that a given statement is true while the prover avoids conveying any additional information apart from the fact that the statement is indeed true. 
+
+It is worth mentioning that there is already at least one open-source Hyperledger Fabric tokenization SDK with the support of zero knowlede proofs: 
+https://github.com/hyperledger-labs/fabric-token-sdk[fabric-token-sdk]. There are a few caveats though:
+
+1. It has been not audited. It is available in _hyperledger-labs_ repository, which by itself means that it is not intended for a production usage.
+2. It requires https://github.com/hyperledger-labs/fabric-smart-client[Fabric Smart Client], which adds additional complexity to the architecture.
+3. It seems to be comprehensive yet quite complex solution with high barrier of entry. 
+4. It supports UTXO model only.
+
+*We believe that simplicity is a key to adoption of any technology. In our approach we follow KISS principle.* 
+
+[%breakable]
+=== Results
+
+We demonstrate how Pedersen commitment can be utilised to increase payment privacy by hidding transaction amounts. 
+
+Pedersen commitment is well-known cryptographic concept, that dates back to 1991, and is very popular in permissionless blockchain space. In this paper, we show how put it to work in permissoned HyperLedger Fabric blockchain network.
+
+Additionally, we use Account model (not UTXO) and we add audit capability to cater for AML requirements.
+
+Note:: We recognize that hiding an amount is just a first step towards full privacy. What's important is that it's a simple, easy step for others to make and follow. More is to come. 
+
+[%breakable]
+== Overview
+
+[%breakable]
+=== Participants
+
+Following participants are involved:
+
+*Users*
+
+Own tokens and exchange them with other users.
+
+*Issuers (Minters)*
+
+Mints tokens and distribute them among Users.
+
+*Auditors*
+
+Authorized parties that can see everything what is happening in blockchain network for auditing purposes. In this paper, it is assumed that auditing capability is implemented with the use of https://blog.openreplay.com/blockchain-oracles-and-their-components[Outbound Oracles] (although there are different, workable approaches).
+Outbound Oracles can be run by one/multiple parties and based on predefined, transparent rules, intercept information in the blockchain and feed it to external auditing system(s). Above-mentioned rules are part of smart contract definition (hence visible to every blockchain network participant).
+
+*Registration authorities*
+
+Generate credentials for all the participants in the system. There is one registration authority per each organisation in a blockchain network.
+
+[%breakable]
+=== Trust Model
+
+*Users*
+
+Users can collude to exploit the system in any way - they can try to steal the tokens, transfer non-existing tokens etc.
+
+*Issuers*
+
+Issuers are trusted to mint correct number of tokens at any given time. No other trust assumption is made (for example: issuers can collude to transfer non-existing tokens after minting).
+
+*Auditors*
+
+The rules, by which auditors receive the data are transparent and governed by smart contract. However, once auditors come into possession of the data, they are trusted to handle it up to all required and agreed data management standards (e.g. GDPR, privacy etc.).
+The data can be encrypted using symetric/asymmetric crypthography, access can be secured by different software solutions/hardware appliances. 
+
+*Registration authorities*
+
+Registration authorities are trusted to issue proper credentials for every participant that belongs to their organisation. Appropriate verifiation process should be in place. Registration authorities don't transact in the network (issue/transfer tokens).
+
+
+[%breakable]
+== Cryptographic schemes
+
+The only scheme we need is the Pedersen commitment. The official paper by Pedersen can be accessed here:
+https://link.springer.com/chapter/10.1007/3-540-46766-1_9[Link]
+
+[%breakable]
+=== Commitments
+
+By using a commitment, as a name suggests, we can commit to a certain value. Simple example is a one-way hash function (like SHA256):
+
+1. Alice hashes a value X (thereby committing to it)
+2. Alice hands over the hash to Bob (what is important - hash doesn't reveal anything about X)
+3. Later on, Alice hands over X to Bob. Bob can calculate a hash out of X and compare it to the hash it received earlier by Alice.
+
+Commitment must have two properties. It must be:
+
+1. Binding - if I commit to a value X, I can't change that value later without this fact being detected.
+2. Hidding - Commitment must tell nothing about value X.
+
+[%breakable]
+=== Pedersen commitments
+
+Pedersen commitments can be implemented with a use of finite fields or eliptic curves. In this document we discuss the former approach
+
+[%breakable]
+==== Setup
+
+Let's make a use of https://en.wikipedia.org/wiki/Schnorr_group[Schnorr group] which is characterized by some useful cryptographic properties (please see a link for details).
+
+
+Let's take stem:[p, q, r], such that stem:[p, q] are large primes, stem:[r in NN] and stem:[p = qr +1]. Consider multiplicative group stem:[Z_(p)^**]. By Fermat theorem we know that: 
+
+stem:[AAa in Z_(p)^**] stem:[a^(p-1) equiv 1 (mod p)],
+
+Hence: 
+
+stem:[a^(p-1) equiv 1 (mod p)  iff a^(qr) equiv 1 (mod p) iff (a^r)^q equiv 1 (mod p)]
+
+After excluding a case in which: 
+
+stem:[a^(r) equiv 1 (mod p)], 
+
+stem:[a^(r)] becomes a generator  of subgroup stem:[Q_q] of group stem:[Z_(p)^**]. Order of  stem:[Q_q] is stem:[q].
+
+Note:: The order of stem:[a^(r)] must be stem:[q] (there is no smaller integer stem:[t] that stem:[(a^r)^t equiv 1 (mod p)]). It is due to the fact that the order must divide stem:[p-1] and we ruled out already the case where stem:[a^(r) equiv 1 (mod p)].
+
+For Pedersen commitment, two generators of subgroup stem:[Q_q] are needed. There is already one: stem:[g = a^r]. The second one is easy to obtain as soon as we have a set that makes up a subgroup - every element of stem:[Q_q] is a generator, so we can take any random one. Alternatively, we can take any stem:[h in Z_(p)^**], and verify if it is a generator by using below formula:
+stem:[h^(q) equiv 1 (mod p)]. 
+
+Summing up, at the end of our setup phase we have the following:
+
+1. stem:[p, q] - large primary numbers
+2. stem:[g, h] - generators of group stem:[Q_q]. Important assumption is that stem:[log_(g)(h)] is unknown to all parties (for the reasons that will become clear soon).
+
+[%breakable]
+===== Commitment and opening
+
+Alice selects a random secret value stem:[t in ZZ_q] and commits to a secret value stem:[s in ZZ_q] by calculating:
+
+stem:[E(s,t) = g^s*h^t]
+
+Note::
+stem:[h^t] is needed for hidding purposes (otherwise one when knowing stem:[g] could "guess" stem:[s])
+
+To open a commitment, she publishes stem:[(s,t)]. Bob then calculates again:
+
+stem:[E(s,t) = g^s*h^t] and compares to the previous value, published by Alice.
+
+Note::
+Now we can see that, if Alice knows stem:[log_(g)(h)], she can try to tweak stem:[s] and stem:[t] appropriatelly, so that commited value stem:[s] changes, without a change to stem:[E(s,t)]. This is exactly what we want to avoid.
+
+[%breakable]
+===== Homomorphic properties
+
+Homomorophic properties stem directly from the definition. 
+
+Addition:
+
+stem:[E(s_1,t_1)*E(s_2,t_2) = (g^(s_1)*h^(t_1))*(g^(s_2)*h^(t_2)) = E(s_1+s_2,t_1+t_2)]
+
+Subtraction:
+
+stem:[E(s_1,t_1)*E(s_2,t_2)^-1 = (g^(s_1)*h^(t_1))*(g^(s_2)*h^(t_2)) = E(s_1-s_2,t_1-t_2)]
+
+
+It implies that we can perform the operations on committed values without knowing the actual values (we can add/subtract them).
+
+[%breakable]
+== Design 
+
+=== Data privacy
+
+As already stated, assumption is that all transaction amounts and account balances are stored on blockchain in the form of Pedersen commitments. No actual values are revealed. All other data associated with accounts and transactions (like sender, recipient, metadata) are stored in plain text.
+
+Actual transaction amounts and account balances are stored in the _wallet_, which is a client-side component (for example: mobile application). Users, can prove their balance at any time, by presenting the value from the _wallet_, calculating Pedersen commitment and comparing to the value stored on-chain.
+
+Note:: 
+Of course, apart from actual amounts, we also need to store random secret values (stem:[t in ZZ_q]). This is in general omitted later on in the text, for brevity.
+ 
+=== Architecture 
+
+image::hlv.drawio.png[mint]
+
+*1.Register*
+
+Registration authority is responsible for onboarding other organisations onto the network. To that end it might use standard HyperLedger Fabric registration process or modification of it (for example in case of Oracle Blockchain Platform we might use OAUTH). 
+Registration process is not the focus of this document.
+
+*2.Mint*
+
+Issuer is responsible for minting new tokens, according to some agreed procedure. To that end, they call _Mint_ function in Smart Contract and pass on number of tokens to mint. Smart Contract doesn't validate the amount itself (it can be any positive number).
+
+*3.Transfer*
+
+Issuer and User call _Transfer_ function to transfer tokens from their account to any other account. Smart Contract makes sure that proper accounts are debited/credited and that no negative balance takes place.
+
+*4.Relay*
+
+The calls to Smart Contract functions initiate calls to an _Auditing system_. When exactly calls are made and what information is transfered depends on the rules embedded in Smart Contract itself.
+
+It's recommended to not make such calls directly, buth through the additional, intermediary component known as an Oracle.
+
+Communication with _Auditing system_ is not the focus of this document (we just want to highlight the fact that it is possible in a very flexible way).
+
+[%breakable]
+=== Set-up
+
+All required parties must be correctly onboarded to the blockchain network.
+
+Due to the fact that Pedersen commitments are calculated on client-side, _wallet_ component must have proper setup in terms of security parameters (stem:[g, h] - generators of group stem:[Q_q]). Additionally, it must be able to generate pseudorandom value stem:[t in ZZ_q].
+
+Note:: Pedersen commitment can't be generated in the Smart Contract as it requires random value which, by definition, is not deterministic.
+
+[%breakable]
+=== Mint
+
+Note:: For brevity, from now on we represent Pedersen commitment as stem:[E(X)], where stem:[X] indicates corresponding value to commit to. We omit secret random value stem:[t in ZZ_q] which is of course required and must be provided as well.
+
+image::mint.drawio.png[mint]
+
+Issuer calls _Mint_ function and provides two input parameters:
+
+1. X - value to mint. Note: It is delivered to the Smart Contract, but is not stored on-chain (in HLF we can use the _Transient Map_ structure to accommodate this requirement).
+2. E(X) - corresponding Pedersen commitment.
+
+Smart Contract chcecks invariants:
+
+1. X must be equal to E(X)
+
+Smart Contract calculates new account balance of the Issuer by making use of homomorphic properties of Pedersen Commitment:
+
+stem:[E(Z)=E(Y)*E(X)], where stem:[E(Y)] represents current balance (before minting) and is taken from blockchain.
+
+stem:[E(Y)], which represents new account balance, is stored on-chain. _Mint_ transaction of value stem:[E(X)] is stored as well (so that we have account transaction history).
+
+Transaction data, together with actual transaction amount X, is sent to the _Auditor_ for auditing purposes.
+
+[%breakable]
+=== Transfer
+
+Transfer operation will be implemented as a https://en.bitcoin.it/wiki/Hash_Time_Locked_Contracts[Hash Time Locked Contract].
+
+It is required, because receiver must acknowledge that he/she is in possesion of actual value of the transaction. This value is not stored on-chain and should be transmited out-of-band.
+
+==== Step 1 - send tokens
+
+image::transfer_1.drawio.png[transfer]
+
+Sender calls _Transfer_ function and provides the following input parameters:
+
+1. X - transaction amount (value to transfer). 
+2. E(X) - corresponding Pedersen commitment.
+3. Y - current sender account balance.
+4. Z - recipient account
+
+Note:: X, Y are delivered to the Smart Contract, but not stored on-chain.
+
+Smart Contract chcecks invariants:
+
+1. X must be equal to E(X)
+2. Y must be equal to E(Y)
+3. Y-X >= 0
+4. Valid recipient account must exists
+
+Smart Contract subtracts the transaction amount from sender account balance. It transfers the amount to temporary account (not directly to recipient account). To that end, commitment must be calculated(stem:[E(W)*E(X)], where W represents current temporary account balance). Proper payment transaction is generated. 
+
+Audit information is sent to the _Auditor_. Optionally, event is generated to notify recipient that token transfer is waiting for this approval.
+
+==== Step 2a - acknowledge receipt
+
+image::transfer_2.drawio.png[approve]
+
+Recipient calls _Approve_ function and provides the following input parameters:
+
+1. TxId - payment transaction id to approve (provided by Sender and/or event)
+
+Note:: Before approving the transaction, recipient must make sure they are in a possesion of real value X (and corresponding random parameter t) that is represented by commitment E(X).
+
+Smart Contract chcecks invariants:
+
+1. Hash Time Locked Contract must have not expired. Expiration can be done based on time or block number (for example: contract is valid for next 100 blocks).
+2. Payment transaction must still be valid (not approved)
+
+Transfering the amount from temporary account to recipient account is done using usual commitments' calculations:
+
+1. Debit temporary account: stem:[E(W)*E(X)^-1], where W represents current temporary account balance
+2. Credit recipient account: stem:[E(U)*E(X)], where U represents current recipient account balance
+
+==== Step 2b - reject receipt
+
+image::transfer_3.drawio.png[reject]
+
+
+Once the contract expires and sender hasn't approved the transfer, recipient can revert the transaction. To that end he calls _Reject_ function and provides the following input parameters:
+
+1. TxId - payment transaction id to reject 
+
+Smart Contract chcecks invariants:
+
+1. Hash Time Locked Contract must have been expired.
+2. Payment transaction must still be valid (not approved/rejected)
+
+Transfering the amount is done using usual commitments' calculations.
+
+[%breakable]
+=== Auditability
+
+All information required for auditing purposes is available in _Auditing system(s)_ by design. Additionally, on-chain we have a full tracebility of transfers up to the origin which is minting account. Although we can't see the amounts, we can verify that all transfers have been done correctly and only with tokens minted by designated parties.
+
+[%breakable]
+=== Client architecture
+
+Wallet component which resides on client-side is critical part of the architecture. It must securly store account balance(s) of the owner and optionally all transaction amounts associated with the account(s). It must support backup/recovery of the data. It might be integrated with third party storage providers to disseminate the data for increased fault talerance. 
+
+[%breakable]
+=== Additional considerations
+
+It should be noted that implementation of tokens with the use of Account model in HyperLedger Fabric is challenging. Once multiple transactions start to modify the same account balances (very common scenario in real life) we will end up with https://hyperledger-fabric.readthedocs.io/en/release-2.5/readwrite.html[MVCC errors]. This will limit throughput significantly.
+
+There is no easy fix to this problem in HLF. However, Oracle Blockchain Platform introduces https://docs.oracle.com/en/cloud/paas/blockchain-cloud/usingoci/tokenization-support.html[MVCC optimisation feature] which takes care of it.

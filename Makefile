@@ -10,7 +10,7 @@ build: ${posts}
 asciidoc/posts/%/index.html: asciidoc/posts/%/index.asciidoc
 	asciidoctor $? -o $@
 	cp $@ $(subst asciidoc,docs,$(@))
-	cp $(subst index.html,*.png,$(@)) $(subst asciidoc/index.html,docs,$(@)) 
+	cp $(subst index.html,*.png,$(@)) $(subst asciidoc,docs,$(subst index.html,"",$(@))) 
 	rm $@
 
 
