@@ -1,12 +1,8 @@
 = Extending payment privacy in permissoned blockchain system (Hyperledger Fabric)
-:stem: 
-:title-page: 
-:author: Miroslaw Sedzinski
-:revnumber: 0.1
-:revdate: {docdate}
-:revremark: Draft version
 :toc: auto
 :toc-title: Table of content
+
+link:../../index.html[Back to main page]
 
 [%breakable]
 == Inroduction
