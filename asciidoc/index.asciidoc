@@ -30,6 +30,7 @@ Site is still in experimental mode. It will evolve in future for sure.
 Click on the links below to read my posts:
 
 === link:posts/1/index.html[Managing Secrets in OCI Vault service]
+=== link:posts/2/index.html[Extending payment privacy in permissoned blockchain system (Hyperledger Fabric)]
 
 
 
