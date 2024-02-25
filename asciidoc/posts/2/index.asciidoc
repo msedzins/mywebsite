@@ -1,4 +1,5 @@
 = Extending payment privacy in permissoned blockchain system (Hyperledger Fabric)
+:stem: 
 :toc: auto
 :toc-title: Table of content
 
