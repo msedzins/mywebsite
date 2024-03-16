@@ -23,7 +23,7 @@ Slice contains three elements:
 * the length of the slice (in the diagram above it's 2)
 * the capacity of the slice (in the diagram above it's 3). Capacity specifies the length of the underlying array, which is the maximum number of elements that the slice can contain.
 
-*What is important to remember is that slicing changse a `ptr` and `len` of the slice, but not `cap`.*
+*What is important to remember is that slicing changes a `ptr` and `len` of the slice, but not `cap`.*
 
 [%breakable]  
 == Passing on a slice - by value or reference?
