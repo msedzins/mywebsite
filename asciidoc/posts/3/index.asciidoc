@@ -1,0 +1,262 @@
+= Slicing slices in Golang 
+:toc: auto
+:toc-title: Table of content
+:source-highlighter: highlight.js
+
+
+link:../../index.html[Back to main page]
+
+[%breakable]
+== Inroduction
+
+Golang is known for its simplicity and ease of use. However, as in every language, there are some potentially tricky concepts. Let's look at slices then. 
+
+Very good description of slices can be found in the official documentation: https://blog.golang.org/slices-intro[Go Slices: usage and internals]
+
+In short, a slice is a reference to a contiguous segment of an array. It is a variable-length sequence which stores elements of a similar type, you can think of it as a dynamic array.
+
+image::slice.drawio.png[slice]
+
+Slice contains three elements:
+
+* a pointer to the element of the array (doesn't have to be the first element of an array, but it is the first element of the slice)
+* the length of the slice (in the diagram above it's 2)
+* the capacity of the slice (in the diagram above it's 3). Capacity specifies the length of the underlying array, which is the maximum number of elements that the slice can contain.
+
+*What is important to remember is that slicing changse a `ptr` and `len` of the slice, but not `cap`.*
+
+[%breakable]  
+== Passing on a slice - by value or reference?
+
+By default, everything is passed by value in golang. In the example below, we are pasing a slice by value (which means ``ptr, len, cap`` are copied to the function). 
+
+Note:: The underlying array, pointed to by ``ptr``, is not copied.
+
+As a result, the assignment to the slice in the function will not change the original slice.
+
+
+```golang
+func test_function(nums []int) {
+
+	// This will not change the original slice
+	//We are changing the slice header (ptr, len, cap), not the underlying array
+	nums = []int{6, 7, 8, 9, 10}
+}
+
+func main() {
+
+	nums := []int{1, 2, 3, 4, 5}
+
+	fmt.Printf("Before: %v\n", nums)
+	test_function(nums)
+	fmt.Printf("After: %v\n", nums)
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+After: [1 2 3 4 5]
+```
+
+What if we use pointers? Shouldn't be the original slice modified then? Let's see.
+
+[%breakable]
+```golang
+func test_function(nums *[]int) {
+
+	//This will not change the original slice either!!!
+	//"nums" is a copy of the pointer to the slice. We are changing the pointer to the slice, not the slice itself.
+	nums = &[]int{6, 7, 8, 9, 10}
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+After: [1 2 3 4 5]
+```
+
+What happened? The pointer to the slice was copied to the function, and the assignment to the pointer in the function did not change the original pointer.
+
+image::pointer.drawio.png[slice]
+
+
+Is there any option to modify the original slice? Yes, it is!
+
+```golang
+func test_function(nums *[]int) {
+
+	//"*nums" references to the original slice
+	*nums = []int{6, 7, 8, 9, 10}
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+After: [6 7 8 9 10]
+```
+
+Finnaly, the original slice was modified. We had to take our copied pointer and dereference it to get to the original slice.
+
+Howerver, modification can be done without pointers as well. 
+
+```golang
+func test_function(nums []int) {
+
+	// This will change the original slice because nums keeps a copied "ptr", which points to the same underlying array
+	nums[0] = 6
+	nums[1] = 7
+	nums[2] = 8
+	nums[3] = 9
+	nums[4] = 10
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+After: [6 7 8 9 10]
+```
+
+[%breakable]
+== Using append function to modify a slice 
+
+There are two modes ``append`` function can be used in:
+
+* create a new slice for the same underlying array
+* create a new slice for a *NEW* array
+
+This is described in an official documentation:
+
+[quote]
+--
+The append built-in function appends elements to the end of a slice. If
+it has sufficient capacity, the destination is resliced to accommodate the
+new elements. If it does not, a new underlying array will be allocated.
+Append returns the updated slice. 
+--
+
+What does it mean for us? Let's see.
+
+=== Modifying elements of the slice withing the existing capacity
+
+Every slice has a capacity which specifies the length of the underlying array. This value is fixed. If we append elements to the slice within the capacity, the original slice will be modified.
+
+```golang
+func test_function(nums []int) {
+
+	new_num := append(nums[:4], 1111)
+	fmt.Printf("Inside: %v\n", new_num)
+}
+
+func main() {
+
+	nums := []int{1, 2, 3, 4, 5}
+
+	fmt.Printf("Before: %v\n", nums)
+	test_function(nums)
+	fmt.Printf("After: %v\n", nums)
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+Inside: [1 2 3 4 1111]
+After: [1 2 3 4 1111]
+```
+
+=== Removing elements of the slice 
+
+Now, let's try to remove elements from the slice and append a value.
+
+```golang
+func test_function(nums []int) {
+
+	new_num := append(nums[:1], 1111)
+	fmt.Printf("Inside: %v\n", new_num)
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+Inside: [1 1111]
+After: [1 1111 3 4 5]
+```
+
+What happened? 
+
+* The capacity of the original slice is 5 and has not been exceeded. It means underlying array has not been replaced.
+* That's why adding `1111` replaced value in underlying array and the original slice was modified.
+* `new_num` is a new slice, but it points to the same underlying array as `nums`. The length of the slice is 2, but the capacity is 5. Because length is 2, only two first elements are shown.
+
+The last point means actully that despite the fact that `new_num` shows only 2 first elements, the underlying array contains all 5 elements. And they can be reclaimed! Like this:
+
+
+```golang
+func test_function(nums []int) {
+
+	new_num := append(nums[:1], 1111)
+	fmt.Printf("Inside: %v\n", new_num)
+	fmt.Printf("Reclaim: %v\n", new_num[:cap(new_num)])
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+Inside: [1 1111]
+Reclaim: [1 1111 3 4 5]
+After: [1 1111 3 4 5]
+```
+
+Note:: Removing elements impacts the lenght of the slice but not capacity. 
+
+=== Adding elements beyond the capacity
+
+If we append elements to the slice beyond the capacity, `append` function will create a new slice for a *NEW* array. It means that original slice (and its array) won't be affected.
+
+```golang
+func test_function(nums []int) {
+
+	new_num := append(nums, 1111)
+	//modify first element just to verify if new_num points to the same array as nums:
+	new_num[0] = 9999
+	fmt.Printf("Inside: %v\n", new_num)
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+Inside: [9999 2 3 4 5 1111]
+After: [1 2 3 4 5]
+```
+
+BTW: the below code will have the same effect on original slice as the above one:
+
+```golang
+func test_function(nums []int) {
+
+	new_num := append(nums[cap(nums)-1:cap(nums)], 1111)
+	//modify first element just to verify if new_num points to the same array as nums:
+	new_num[0] = 9999
+	fmt.Printf("Inside: %v\n", new_num)
+}
+```
+
+Program outcome:
+```shell
+Before: [1 2 3 4 5]
+Inside: [9999 1111]
+After: [1 2 3 4 5]
+```
+
+We can see that `new_nums` is an entirely new slice (capacity=2), and it points to a new array. The original slice (capacity=5) was not modified.
+
+== Conclusions
+
+Slices are a very powerful and flexible data structure in Golang. They are easy to use and understand, but there are some tricky concepts that might come out in more advanced usages.
