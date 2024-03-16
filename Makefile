@@ -1,4 +1,4 @@
-posts := asciidoc/posts/1/index.html asciidoc/posts/2/index.html
+posts := asciidoc/posts/1/index.html asciidoc/posts/2/index.html asciidoc/posts/3/index.html
  
 deploy: build
 	git commit -a -m "New version"
