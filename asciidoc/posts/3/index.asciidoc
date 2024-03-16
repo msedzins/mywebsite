@@ -259,4 +259,4 @@ We can see that `new_nums` is an entirely new slice (capacity=2), and it points 
 
 == Conclusions
 
-Slices are a very powerful and flexible data structure in Golang. They are easy to use and understand, but there are some tricky concepts that might come out in more advanced usages.
+Slice is a very powerful and flexible data structure in Golang. It is easy to use and understand, but there are some tricky concepts that might come out in more advanced usages.
