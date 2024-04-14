@@ -142,7 +142,9 @@ What does it mean for us? Let's see.
 
 === Modifying elements of the slice withing the existing capacity
 
-Every slice has a capacity which specifies the length of the underlying array. This value is fixed. If we append elements to the slice within the capacity, the original slice will be modified.
+Every slice has a capacity which specifies the length of the underlying array. This value is fixed. If we append elements to the slice within the capacity, the original array will be modified and updated slice will be returned by `append` function.
+
+Note:: Please note that input slice to `append` function won't be modified (in particular `len` will remain the same)
 
 ```golang
 func test_function(nums []int) {
