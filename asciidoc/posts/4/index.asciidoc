@@ -9,11 +9,11 @@ link:../../index.html[Back to main page]
 [%breakable]
 == Introduction
 
-Deniable encryption is a form of encryption that allows the sender to deny the very existence of the message. This is achieved by encrypting the message in such a way that it can be decrypted to a different message, depending on the key used.
+Deniable encryption is a form of encryption that allows the sender to deny the existence of the message. This is achieved by encrypting the message in such a way that it can be decrypted to a different message, depending on the key used.
 
 Sounds like magic? It is not. 
 
-Stream ciphers are a perfect candidate for deniable encryption. In this article, we will explore how deniable encryption can be implemented using one-time pad, a stream cipher that is perfectly secure if used correctly.
+Stream ciphers are a perfect candidate for deniable encryption. In this article, we will explore how deniable encryption can be implemented using one-time pad.
 
 
 == Theory
@@ -27,7 +27,7 @@ Now, let's say we want to encrypt the different message `M2` to the same ciphert
 
 stem:[C = M2 oplus K2]
 
-Obviously, we need different key `K2`, but this time we don't generate the key randomly, we calculate it as follows:
+Obviously, we need a different key `K2`, but this time we don't generate the key randomly, we calculate it as follows:
 
 stem:[K2 = C2 oplus M2]
 

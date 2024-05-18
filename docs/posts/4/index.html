@@ -458,13 +458,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Deniable encryption is a form of encryption that allows the sender to deny the very existence of the message. This is achieved by encrypting the message in such a way that it can be decrypted to a different message, depending on the key used.</p>
+<p>Deniable encryption is a form of encryption that allows the sender to deny the existence of the message. This is achieved by encrypting the message in such a way that it can be decrypted to a different message, depending on the key used.</p>
 </div>
 <div class="paragraph">
 <p>Sounds like magic? It is not.</p>
 </div>
 <div class="paragraph">
-<p>Stream ciphers are a perfect candidate for deniable encryption. In this article, we will explore how deniable encryption can be implemented using one-time pad, a stream cipher that is perfectly secure if used correctly.</p>
+<p>Stream ciphers are a perfect candidate for deniable encryption. In this article, we will explore how deniable encryption can be implemented using one-time pad.</p>
 </div>
 </div>
 </div>
@@ -484,7 +484,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>\$C = M2 oplus K2\$</p>
 </div>
 <div class="paragraph">
-<p>Obviously, we need different key <code>K2</code>, but this time we don&#8217;t generate the key randomly, we calculate it as follows:</p>
+<p>Obviously, we need a different key <code>K2</code>, but this time we don&#8217;t generate the key randomly, we calculate it as follows:</p>
 </div>
 <div class="paragraph">
 <p>\$K2 = C2 oplus M2\$</p>
@@ -533,7 +533,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-05-18 22:27:58 +0200
+Last updated 2024-05-18 22:43:10 +0200
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
