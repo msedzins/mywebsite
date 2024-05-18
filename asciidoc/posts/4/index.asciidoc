@@ -29,7 +29,7 @@ stem:[C = M2 oplus K2]
 
 Obviously, we need a different key `K2`, but this time we don't generate the key randomly, we calculate it as follows:
 
-stem:[K2 = C2 oplus M2]
+stem:[K2 = C oplus M2]
 
 As, a result, we can decrypt the ciphertext `C` with the key `K1` to get the message `M1` or with the key `K2` to get the message `M2`.
 
