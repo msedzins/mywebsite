@@ -1,0 +1,56 @@
+= Deniable encryption with one-time pad
+:stem: 
+:toc: auto
+:toc-title: Table of content
+:source-highlighter: highlight.js
+
+link:../../index.html[Back to main page]
+
+[%breakable]
+== Introduction
+
+Deniable encryption is a form of encryption that allows the sender to deny the very existence of the message. This is achieved by encrypting the message in such a way that it can be decrypted to a different message, depending on the key used.
+
+Sounds like magic? It is not. 
+
+Stream ciphers are a perfect candidate for deniable encryption. In this article, we will explore how deniable encryption can be implemented using one-time pad, a stream cipher that is perfectly secure if used correctly.
+
+
+== Theory
+
+Let's say we have  a message `M1` that we want to encrypt with the use of one-time pad. We generate randomly a key `K1` that is as long as the message. The key is XORed with the message to produce the ciphertext `C`. The decryption is done by XORing the ciphertext with the key.
+
+
+stem:[C = M1 oplus K1]
+
+Now, let's say we want to encrypt the different message `M2` to the same ciphertext `C`:
+
+stem:[C = M2 oplus K2]
+
+Obviously, we need different key `K2`, but this time we don't generate the key randomly, we calculate it as follows:
+
+stem:[K2 = C2 oplus M2]
+
+As, a result, we can decrypt the ciphertext `C` with the key `K1` to get the message `M1` or with the key `K2` to get the message `M2`.
+
+
+[%breakable]  
+== Example
+
+Let's take a `HELLO` message as an example. First, we need to convert the message to binary representation.
+
+image::encoding.drawio.png[Encoding]
+
+Next we need to generate a key. The key should be as long as the message and should be generated randomly (uniformly distributed). Encryption is done by XORing the message with the key and is depicted in the following diagram.
+
+image::encryption.drawio.png[Encoding]
+
+Finally, we obtain `K2` for arbitrary message `M2` by XORing the ciphertext with the message. In the example below, we use `A` as a first letter of the second message.
+
+image::k2.drawio.png[Encoding]
+
+It's easy to verify that:
+
+stem:[M1 = C oplus K1 = 11100000 oplus 10101000 = 01001000 = H]
+stem:[M2 = C oplus K2 = 11100000 oplus 10100001 = 01000001 = A]
+
