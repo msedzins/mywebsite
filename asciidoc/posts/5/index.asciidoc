@@ -155,7 +155,7 @@ Please note that:
 
 Perfect security is a very strong property. But it's hard to achieve in practice. For example, one-time pad is perfectly secure, but it's not practical. 
 
-One of the reasons is that the key must be as long as the message (example proof - [1]). Secondly, the key must be random and never reused.
+One of the reasons is that the key must be as long as the message (example proof - [2]). Secondly, the key must be random and never reused.
 
 The good news is that one can relax the definition of security and still have a useful encryption scheme. In real life, what is required is to make sure that no *efficient* adversary can break encryption with *non-negligible* probability.
 
@@ -205,7 +205,7 @@ It's enough to select a proper security parameter `n` to make sure that the adve
 
 === Example
 
-The function `f(n) = 1/2^n` is negligible, because:
+The function `f(n) = 1/2^n` is negligible because:
 [stem]
 ++++
 \lim_{n \to \infty} n^c / (1/2^n) = 0
@@ -214,7 +214,7 @@ The function `f(n) = 1/2^n` is negligible, because:
 where `c` is a constant.
 
 
-The function `f(n) = n^100` is not negligible, because:
+The function `f(n) = n^100` is not negligible because:
 [stem]
 ++++
 \lim_{n \to \infty} n^c n^100 != 0
@@ -222,18 +222,21 @@ The function `f(n) = n^100` is not negligible, because:
 
 for any constant `c≥100`.
 
-Simple diagram that shows how `n^c / (1/2^n)` behaves for different values of `c∈{2,3,4,5}`:
+Here is a simple diagram that shows how `n^c / (1/2^n)` behaves for different values of `c∈{2,3,4,5}`:
 
 image::diagram.png[diagram]
 
-As can be seen, the function `1/2^n` decreases much faster than polynomial function and finally the product of two functions approaches zero.
+As can be seen, the function `1/2^n` decreases much faster than the polynomial function and finally the product of two functions approaches zero.
 
 [%breakable]
 == Summary
 
-In most real life scenarios, perfect security is not achievable. Instead, one can aim for semantic security, which is a weaker property, but still useful and used in practice.
+In most real-life scenarios, perfect security is not achievable. Instead, one can aim for semantic security, which is a weaker property, but still useful and used in practice.
 
 [%breakable]
 == References
-. Book 1
-. Book 2
+
+Below, please find a list of references that I used to write this article. I can highly recommend them to anyone interested in the topic.
+
+. "The Joy of Cryptography", Mike Rosulek, 2021
+. "A Graduate Course in Applied Cryptography", Dan Boneh and Victor Shoup, 2023
