@@ -167,16 +167,71 @@ Please note that the "=" sign was replaced with "≈".
 
 Transforming the above expression, we get:
 ```
-| Pr[Enc(k, m1) = c] - Pr[Enc(k, m2) = c] | = ε
+| Pr[Enc(k, m1) = c] - Pr[Enc(k, m2) = c] | =  ε
 ```
 
-`ε` represents the advantage of the adversary. In case of perfect security it is 0, but for semantic security it is enough for `ε` to be negligible.
+`ε` represents the advantage of the adversary. In case of perfect security it is 0, but for semantic security it is enough for `ε` to be negligible:
+```
+| Pr[Enc(k, m1) = c] - Pr[Enc(k, m2) = c] |   ≤ ε
+```
+
 
 [%breakable]
 === Efficient adversary
 
+First, let's define what an efficient adversary is. From practical point of ew, an efficient adversary is a program that can run in a reasonable time (like days/months and not 100 years). Below, there is more formal.
+
+
+Definition 1:: A program runs in polynomial time if there exists a polynomial `p` such that the program halts in at most `p(n)` steps on any input of length `n`.
+
+Definition 2:: An adversary is efficient if it runs in polynomial time.
+
+Note:: Polynomial time is not a perfect measure of efficiency. For example, a program that runs in `n^1000` steps is polynomial, but might not be efficient from practical point of view. On the other hand, program with time complexity `O(n^loglogloglog(n))` is not polynomial, hence is considered not efficient. Despite that, polynomial time is a good practical approximation of efficiency, excluding some corner cases.
+
 [%breakable]
 === Negligible function
+
+Definition 3:: A function `f` is negligible if for every polynomial `p`, we have:
+[stem]
+++++
+\lim_{n \to \infty} p(n)f(n) = 0
+++++
+
+In other words, a function is negligible if it decreases faster than any polynomial.
+
+Let's think for a moment, what does it mean in practice: assuming there is an efficient adversary (which runs in polynomial time `O(p(n))`, and encryption scheme for which advantage is a negligible function `f(n)`, as we increase parameter `n` (called security parameter), there is no chance for p(n) to catch up with f(n)!
+
+It's enough to select a proper security parameter `n` to make sure that the adversary can't break the encryption scheme with non-negligible probability.
+
+=== Example
+
+The function `f(n) = 1/2^n` is negligible, because:
+[stem]
+++++
+\lim_{n \to \infty} n^c / (1/2^n) = 0
+++++
+
+where `c` is a constant.
+
+
+The function `f(n) = n^100` is not negligible, because:
+[stem]
+++++
+\lim_{n \to \infty} n^c n^100 != 0
+++++
+
+for any constant `c≥100`.
+
+Simple diagram that shows how `n^c / (1/2^n)` behaves for different values of `c∈{2,3,4,5}`:
+
+image::diagram.png[diagram]
+
+As can be seen, the function `1/2^n` decreases much faster than polynomial function and finally the product of two functions approaches zero.
+
+[%breakable]
+== Summary
+
+In most real life scenarios, perfect security is not achievable. Instead, one can aim for semantic security, which is a weaker property, but still useful and used in practice.
 
 [%breakable]
 == References
