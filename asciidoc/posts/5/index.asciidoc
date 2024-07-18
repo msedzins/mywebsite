@@ -1,4 +1,4 @@
-= What does it mean "to be secure" in cryptography?
+= What does it mean to be "secure" in cryptography?
 :stem: 
 :toc: auto
 :toc-title: Table of content
