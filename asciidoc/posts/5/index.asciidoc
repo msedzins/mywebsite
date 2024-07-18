@@ -9,7 +9,7 @@ link:../../index.html[Back to main page]
 [%breakable]
 == Introduction
 
-I've been keep asking this question to myself for a long time. What does it mean for an encryption scheme to be secure? 
+I've been asking myself this question for a long time. What does it mean for an encryption scheme to be secure? 
 
 First, let's define a few terms and, at the same time, narrow down the scope of the article. 
 
