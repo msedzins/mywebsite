@@ -55,7 +55,7 @@ Pr[Enc(k, m1) = c] = Pr[Enc(k, m2) = c]
 
 Let's consider a one-time pad encryption scheme (very simple scheme, described for example here: link:../posts/4/index.html[Deniable encryption with one-time pad]). Additionally, for simplicity, let's assume that we operate on 3-bit messages. 
 
-Our example messages are (we can choose any messages):
+Example messages are (any messages can be chosen):
 ```
 m1 = 101
 m2 = 010
@@ -77,6 +77,7 @@ The key space is the set of all possible 3-bit keys:
 
 **Important:** Please note that our key is a random variable uniformly distributed over the key space. The probability to select any key is the same - 1/8. In other words, they key is chosen uniformly/randomly.
 
+Below, there is a table with all possible keys, ciphertexts with respect to the messages `m1` and `m2`, and their probabilities:
 |===
 | Key | P(Key) | c1 = Enc(k, m1) | P(c1) | c2 = Enc(k, m2) | P(c2)
 
@@ -90,19 +91,19 @@ The key space is the set of all possible 3-bit keys:
 | 111 | 1/8 | 010 | 1/8 | 100 | 1/8
 |===
 
-Now, let's assume an adversary intercepted some ciphertext, can be for example `c3 = 111`. What is a probability that the message was `m1` or `m2`?
+Now, let's assume an adversary intercepted some ciphertext, can be for example `c3 = 111`. What is a probability that the message was `m1` or `m2`? From the table above, it can be observed that:
 ```
 Pr[Enc(k, m1) = c3] = Pr[Enc(k, m2) = c3] = 1/8
 ```
 
 In other words, our adversary can't distinguish between `m1` and `m2` based on the ciphertext `c3`. 
 
-*This is what we call a perfect security.*
+*This property is called a perfect security.*
 
 [%breakable]
 === Example 2 (non-uniform key distribution)
 
-Let's modify our previous example and think, for a moment, about a scenario when a key distribution is not uniform. All other parameters remain the same.
+Let's modify our previous example and think, for a moment, about a scenario when a key distribution is not uniform (common situation as there is no perfect random generator). All other parameters remain the same.
 
 |===
 | Key | P(Key) | c1 = Enc(k, m1) | P(c1) | c2 = Enc(k, m2) | P(c2)
@@ -129,21 +130,55 @@ A few points to be made.
 
 Firstly, adversary, when confronted with the ciphertext `c3`, can simply choose the keys with highest probability and by doing this increase his chance of correct guess (1/4 vs 1/8 vs 0). The more non-uniform the key distribution is, the easier it is for the adversary to guess the message.
 
-Secondly, let's calculate advantage of our adversary. What is advantage? We can define it as follows:
+Secondly, let's calculate an advantage of our adversary, which can be defined as follows:
 ```
-Adv. = | Pr[Dec(k3, c3) = m3] - 1/8 |
+Adv = | Pr[Dec(k3, c3) = m3] - 1/8 |
 ```
-where `k3` is a key chosen by the adversary, `c3` is a ciphertext, and `m3` is a message that adversary tries to recover.
+where `k3` is a key chosen by the adversary, `c3` is a ciphertext, and `m3` is a message that the adversary tries to recover.
 
-If the key is sampled uniformly, the chances of the adversary to guess the message are 1/8. If the key is not sampled uniformly, the chances are higher. In our case, the advantage is a difference between the probability that adversary finds proper message and 1/8.
+If the key is sampled uniformly, the chances of the adversary to guess the message are 1/8 (this is what's called a brute-force attack). If the key is not sampled uniformly, the chances are higher. In our case, the advantage is a difference between the probability that the adversary finds proper message and 1/8.
 
 So:
 ```
-Adv. in case of uniform distribution = | 1/8 - 1/8 | = 0 -> perfect security
-Adv. in case of our example distribution = | 1/4 - 1/8 | = 1/4
+Adv in case of uniform distribution = | 1/8 - 1/8 | = 0 -> perfect security
+Adv in case of our example distribution = | 1/4 - 1/8 | = 1/4 -> is this even secure...? 
 ```
 
-Please note that the advantage depends on concrete strategy taken by adversary. In our case the strategy is very simple - always take a key with the highest probability (1/4). 
+Please note that:
+
+. the advantage depends on the concrete strategy taken by the adversary. In our case the strategy is very simple - always take a key with the highest probability (1/4). 
+. the advantage can be defined in different ways. For example, one could calculate the advantage of distinguishing between `m1` and `m2` (which is again zero, in case of perfect security).
+. the presented encryption scheme is not secure because the advantage is not negligible (what "negligible" means is covered in the next section).
 
 [%breakable]
-== Practical security
+== Practical (aka semantic) security
+
+Perfect security is a very strong property. But it's hard to achieve in practice. For example, one-time pad is perfectly secure, but it's not practical. 
+
+One of the reasons is that the key must be as long as the message (example proof - [1]). Secondly, the key must be random and never reused.
+
+The good news is that one can relax the definition of security and still have a useful encryption scheme. In real life, what is required is to make sure that no *efficient* adversary can break encryption with *non-negligible* probability.
+
+It can be expressed as follows:
+```
+Pr[Enc(k, m1) = c] ≈ Pr[Enc(k, m2) = c]
+```
+Please note that the "=" sign was replaced with "≈".
+
+Transforming the above expression, we get:
+```
+| Pr[Enc(k, m1) = c] - Pr[Enc(k, m2) = c] | = ε
+```
+
+`ε` represents the advantage of the adversary. In case of perfect security it is 0, but for semantic security it is enough for `ε` to be negligible.
+
+[%breakable]
+=== Efficient adversary
+
+[%breakable]
+=== Negligible function
+
+[%breakable]
+== References
+. Book 1
+. Book 2
