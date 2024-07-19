@@ -13,7 +13,7 @@ I've been asking myself this question for a long time. What does it mean for an 
 
 First, let's define a few terms and, at the same time, narrow down the scope of the article. 
 
-Encryption scheme is a collection of three algorithms:
+Symmetric-key encryption scheme is a collection of three algorithms:
 
 . Key generation algorithm (KeyGen)
 . Encryption algorithm (Enc)
