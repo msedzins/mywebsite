@@ -159,7 +159,7 @@ One of the reasons is that the key must be as long as the message (example proof
 
 The good news is that one can relax the definition of security and still have a useful encryption scheme. In real life, what is required is to make sure that no *efficient* adversary can break encryption with *non-negligible* probability.
 
-It can be expressed as follows:
+It can be expressed as follows (using expression i've already introduced in the previous section):
 ```
 Pr[Enc(k, m1) = c] ≈ Pr[Enc(k, m2) = c]
 ```
@@ -179,7 +179,7 @@ Transforming the above expression, we get:
 [%breakable]
 === Efficient adversary
 
-First, let's define what an efficient adversary is. From practical point of ew, an efficient adversary is a program that can run in a reasonable time (like days/months and not 100 years). Below, there is more formal.
+First, let's define what an efficient adversary is. From practical point of view, an efficient adversary is a program that can run in a reasonable time (like days/months and not 100 years). Below, there is more formal definition.
 
 
 Definition 1:: A program runs in polynomial time if there exists a polynomial `p` such that the program halts in at most `p(n)` steps on any input of length `n`.
@@ -211,7 +211,7 @@ The function `f(n) = 1/2^n` is negligible because:
 \lim_{n \to \infty} n^c / (1/2^n) = 0
 ++++
 
-where `c` is a constant.
+where `c` is any constant.
 
 
 The function `f(n) = n^100` is not negligible because:
