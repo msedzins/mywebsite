@@ -186,7 +186,10 @@ Definition 1:: A program runs in polynomial time if there exists a polynomial `p
 
 Definition 2:: An adversary is efficient if it runs in polynomial time.
 
-Note:: Polynomial time is not a perfect measure of efficiency. For example, a program that runs in `n^1000` steps is polynomial, but might not be efficient from practical point of view. On the other hand, program with time complexity `O(n^loglogloglog(n))` is not polynomial, hence is considered not efficient. Despite that, polynomial time is a good practical approximation of efficiency, excluding some corner cases.
+Two points to made:
+
+. Polynomial time is not a perfect measure of efficiency. For example, a program that runs in `n^1000` steps is polynomial, but might not be efficient from practical point of view. On the other hand, program with time complexity `O(n^loglogloglog(n))` is not polynomial, hence is considered not efficient. Despite that, polynomial time is a good practical approximation of efficiency, excluding some corner cases.
+. Definition of efficiency is deterministic in our case (for simplification). More accurate would be to assume that algorithm behind the adversary is probabilistic, which means it can exceed polynomial time, but with very low probability.
 
 [%breakable]
 === Negligible function

@@ -926,11 +926,20 @@ Adv in case of our example distribution = | 1/4 - 1/8 | = 1/4 -&gt; is this even
 <dd>
 <p>An adversary is efficient if it runs in polynomial time.</p>
 </dd>
-<dt class="hdlist1">Note</dt>
-<dd>
-<p>Polynomial time is not a perfect measure of efficiency. For example, a program that runs in <code>n^1000</code> steps is polynomial, but might not be efficient from practical point of view. On the other hand, program with time complexity <code>O(n^loglogloglog(n))</code> is not polynomial, hence is considered not efficient. Despite that, polynomial time is a good practical approximation of efficiency, excluding some corner cases.</p>
-</dd>
 </dl>
+</div>
+<div class="paragraph">
+<p>Two points to made:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Polynomial time is not a perfect measure of efficiency. For example, a program that runs in <code>n^1000</code> steps is polynomial, but might not be efficient from practical point of view. On the other hand, program with time complexity <code>O(n^loglogloglog(n))</code> is not polynomial, hence is considered not efficient. Despite that, polynomial time is a good practical approximation of efficiency, excluding some corner cases.</p>
+</li>
+<li>
+<p>Definition of efficiency is deterministic in our case (for simplification). More accurate would be to assume that algorithm behind the adversary is probabilistic, which means it can exceed polynomial time, but with very low probability.</p>
+</li>
+</ol>
 </div>
 </div>
 <div class="sect2">
@@ -1025,7 +1034,7 @@ Adv in case of our example distribution = | 1/4 - 1/8 | = 1/4 -&gt; is this even
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-07-19 09:15:00 +0200
+Last updated 2024-07-19 09:21:56 +0200
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
