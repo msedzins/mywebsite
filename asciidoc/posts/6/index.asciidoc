@@ -1,0 +1,234 @@
+= Private Set Intersection (PSI) protocol - practical example
+:stem: 
+:toc: auto
+:toc-title: Table of content
+
+link:../../index.html[Back to main page]
+
+[%breakable]
+== Inroduction
+
+[quote,Wikipedia,https://en.wikipedia.org/wiki/Private_set_intersection]
+Private set intersection is a secure multiparty computation cryptographic technique that allows two parties holding sets to compare encrypted versions of these sets in order to compute the intersection. In this scenario, neither party reveals anything to the counterparty except for the elements in the intersection.
+
+
+[%breakable]
+=== Motivation
+
+Private set intersection (PSI) is a powerful cryptographic technique with many practical applications. Despite its potential, it has not seen widespread adoption in real-world scenarios. One of the main reasons for this is probably the assumed complexity of the protocol and its implementation.
+
+In this paper, we demonstrate a simple PSI protocol based on well known cryptographic primitives. 
+
+*Simplicity is a key to adoption of any technology.* 
+
+[%breakable]
+=== Results
+
+We demonstrate how OPRF(Oblivious Pseudorandom Function) can be utilised to set up PSI protocol. 
+
+One concrete application is presented - intersection of email lists between two organisations:
+
+* Organisation A has a list of email addresses of its customers.
+* Organisation B has a list of email addresses of its newsletter subscribers.
+
+Both organisations want to find out which email addresses are common in both lists, without revealing any other information about their lists to each other.
+
+NOTE: The protocol is generic and can be applied to number of other use cases.
+
+[%breakable]
+== Overview
+
+[%breakable]
+=== Participants
+
+Following participants are involved:
+
+*Organisations*
+
+Own lists of email addresses. They want to find out the intersection of these lists without revealing any other information.
+
+*Processor*
+
+Third party that helps organisations to compute the intersection. 
+
+[%breakable]
+=== Trust Model
+
+*Organisations*
+
+Organisations don't trust each other. They want to keep their lists private. 
+They don't trust the _Processor_  either.
+
+*Processor*
+
+The _Processor_ is assumed to be honest-but-curious (follows the protocol but may try to learn information). The protocol remains secure even if the _Processor_ colludes with one organisation:
+
+* If _Processor_ colludes with Organisation A: They learn Organisation A's email addresses (which A already knows), but learn nothing about Organisation B's emails beyond the intersection.
+* If _Processor_ colludes with Organisation B: They learn Organisation B's email addresses (which B already knows), but learn nothing about Organisation A's emails beyond the intersection.
+
+The protocol fails only if _Processor_ colludes with **both** organisations simultaneously, as this would reveal all emails to all parties.
+
+[%breakable]
+== Cryptographic schemes
+
+The only scheme we need is OPRF (Oblivious Pseudorandom Function). The specification can be found here:
+https://datatracker.ietf.org/doc/html/rfc9497[Link]
+
+NOTE: In this paper we use OPRF, not VOPRF (Verifiable OPRF) for simplicity. VOPRF is recommended for production use cases as it provides additional security guarantees - clients can verify that server has used correct key in OPRF evaluation.
+
+[%breakable]
+=== OPRF protocol
+
+Following the protocol specification from RFC9497 we have:
+
+1. Setup phase
+    a. *Processor* generates a key pair for the OPRF scheme. Public key is not used in case of OPRF (for VOPRF it is shared with *Organisations*).
+    b. Private key is kept secret by *Processor*.
+2. Organisation blinds the input (email address) using random value.
+    a. `blind, blindedElement = Blind(input)`
+    b. *Organisation* sends `blindedElement` to *Processor*.
+    c. *Organisation* keeps `blind` secret for themselves.
+3.  *Processor* evaluates the OPRF on the blinded input using its private key.
+    a. `evaluatedElement = BlindEvaluate(skS, blindedElement)`
+    b. *Processor* sends `evaluatedElement` back to *Organisation*.
+4. *Organisation* unblinds the received value.
+    a. `output = Finalize(input, blind, evaluatedElement)`
+
+Below diagram illustrates the protocol (source: RFC9497):
+
+image::oprf_protocol.png[OPRF protocol diagram]
+
+[%breakable]
+=== Security guarantees
+
+1. *Processor* doesn't learn anything about the input value (email address).
+2. *Organisation* learns only the output of the OPRF function on their input value (no information about the private key of *Processor* is revealed).
+3. In case of VOPRF - *Organisation* can verify that *Processor* has used correct private key in the evaluation.
+
+[%breakable]
+== PSI protocol
+
+[%breakable]
+=== Step 1
+
+
+image::step1.drawio.png[Step1]
+
+*1.Prepare file with emails*
+
+Each *Organisation* prepares a file with email addresses (one email per line).
+
+*2.Blind*
+
+Blind each email address using OPRF protocol. Each email address is blinded separately. 
+We can think of blinding as symmetric encryption of the email address with homomorphic properties.
+
+*3.Send to Processor*
+
+After blinding, send all blinded email addresses to *Processor*. Processor* doesn't learn anything about the email addresses due to blinding.
+
+[%breakable]
+=== Step 2
+
+
+image::step2.drawio.png[Step2]
+
+*1.BlindEvaluate*
+
+*Processor* evaluates OPRF on each blinded email address received from both *Organisations*. 
+We can think of evaluation as another symmetric encryption of the email address on top of blinding.
+
+*2.Send back to Organisation*
+
+The result is sent back to respective *Organisation*.
+
+[%breakable]
+=== Step 3
+
+
+image::step3.drawio.png[Step3]
+
+*1.Finalize*
+
+Each *Organisation* unblinds each received value using OPRF protocol. Organisation can unblind only the values they have originally blinded.
+
+After unblinding, values are still not email addresses, but pseudorandom values derived from email addresses using secret Server key.
+
+*2.Exchange files*
+
+Each *Organisation* exchanges the resulting files with each other. Organisations can't learn anything about email addresses except the fact that those email addresses that resulted in same pseudorandom value are common in both lists.
+
+=== Pseudo-code
+
+[source,go]
+----
+// Notation
+// H(x)   = Hash function that maps input x to an element in the group (elliptic curve point)
+// k      = Private key of the Processor
+// r1     = Random blinding factor generated by Organisation A
+// a      = Email address from Organisation A
+// r2     = Random blinding factor generated by Organisation B
+// b      = Email address from Organisation B
+
+// Organisation A
+blindA = r1 * H(a)
+
+// Organisation B
+blindB = r2 * H(b)
+
+// Processor
+evalA  = k * blindA
+evalB  = k * blindB
+
+// Organisation A
+unblindedA = (1/r1) * evalA = k * H(a)
+// Organisation B
+unblindedB = (1/r2) * evalB = k * H(b)
+
+// compare unblinded values
+if unblindedA == unblindedB then
+    // a == b // email addresses are in intersection
+end if
+----
+
+[%breakable]
+=== Additional considerations
+
+==== Constant-time operations
+
+RFC9497 recommends using constant-time implementations of cryptographic primitives to avoid timing attacks.
+However, in our use case it is not a concern, as all processing happens in batches, internally, on (presumably) trusted servers.
+
+==== Hash function instead of OPRF
+
+Simple hashing email addresses instead of using OPRF (as shown in the Wikipedia article on PSI) is not secure:
+1. Vulnerable to offline dictionary attacks.
+2. Linkeable across multiple PSI executions.
+3. Reversable for small input space.
+
+=== Quantum security
+
+The presented protocol relies on elliptic curve cryptography (ECC) for OPRF implementation. ECC is vulnerable to quantum attacks (Shor's algorithm).
+
+This is something to address in future work - use of quantum-resistant primitives for OPRF implementation.
+
+[%breakable]
+== Summary
+
+We presented a practical Private Set Intersection protocol based on OPRF (Oblivious Pseudorandom Function) that enables two (or more) organisations to compute the intersection of their email lists without revealing non-intersecting elements to each other or a third-party processor.
+
+*Key advantages:*
+
+* Simple implementation using standardized OPRF (RFC9497)
+* Strong privacy guarantees - parties learn only the intersection
+* Practical efficiency for batch processing
+* Generic protocol applicable beyond email matching
+
+*Limitations:*
+
+* Requires semi-honest processor that doesn't collude with both parties
+* Vulnerable to quantum attacks (Shor's algorithm on ECC)
+* No protection against malicious parties deviating from protocol (use VOPRF for production)
+
+The protocol demonstrates that PSI can be implemented simply and practically, making it accessible for real-world adoption in scenarios requiring privacy-preserving set comparisons.
+

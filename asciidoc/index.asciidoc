@@ -34,6 +34,7 @@ Click on the links below to read my posts:
 === link:posts/3/index.html[Slicing slices in Golang ]
 === link:posts/4/index.html[Deniable encryption with one-time pad]
 === link:posts/5/index.html[What does it mean to be "secure" in cryptography?]
+=== link:posts/6/index.html[Private Set Intersection (PSI) protocol - practical example]
 
 
 
