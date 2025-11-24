@@ -19,7 +19,7 @@ Private set intersection (PSI) is a powerful cryptographic technique with many p
 
 In this paper, we demonstrate a simple PSI protocol based on well known cryptographic primitives. 
 
-*Simplicity is a key to adoption of any technology.* 
+*Simplicity is a key factor in adoption of any technology.* 
 
 [%breakable]
 === Results
@@ -202,6 +202,7 @@ However, in our use case it is not a concern, as all processing happens in batch
 ==== Hash function instead of OPRF
 
 Simple hashing email addresses instead of using OPRF (as shown in the Wikipedia article on PSI) is not secure:
+
 1. Vulnerable to offline dictionary attacks.
 2. Linkeable across multiple PSI executions.
 3. Reversable for small input space.
